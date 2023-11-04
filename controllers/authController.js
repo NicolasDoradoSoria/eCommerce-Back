@@ -33,9 +33,7 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
     try {
         const user = await User.find({email})
-
-        console.log(user)
-        if (!user) return res.status(400).json({ msg: "el usuario no existe" });
+        if (!user[0]) return res.status(400).json({ msg: "el usuario no existe" });
         
         const correctPass = await bcryptjs.compare(password, user[0].password);
         if (!correctPass) return res.status(401).json({ msg: "password incorrecto" });

@@ -1,21 +1,25 @@
 import { Schema, model } from 'mongoose'
 
-const userSchema = Schema(
+const productSchema = Schema(
     {
-        email: {
-            type: String,
-            required: true,
-            trim: true,
-            unique: true,
-        },
-        password: {
+        name: {
             type: String,
             required: true,
             trim: true,
         },
-        register: {
-            type: Date,
-            default: Date.now(),
+        description: {
+            type: String,
+            trim: true,
+        },
+        price: {
+            type: Number,
+            required: true,
+            trim: true,
+        },
+        quantity: {
+            type: Number,
+            required: true,
+            trim: true,
         },
     },
     {
@@ -23,4 +27,4 @@ const userSchema = Schema(
         versionKey: false
     }
 )
-export default model("User", userSchema);
+export default model("Product", productSchema);
