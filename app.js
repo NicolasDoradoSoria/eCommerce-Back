@@ -16,5 +16,7 @@ app.use(express.urlencoded({ extended: false }))
 //rutas
 app.use("/api", routes)
 
-
+//carpeta publica
+app.use(express.static('uploads'))
+ 
 export default app

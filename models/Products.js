@@ -21,6 +21,12 @@ const productSchema = Schema(
             required: true,
             trim: true,
         },
+        images: [
+            {
+                type: String,
+                required: true,
+            }
+        ]
     },
     {
         timestamps: true,

@@ -2,24 +2,10 @@ import Products from '../models/Products'
 
 // agrega un producto
 export const postProducts = async (req, res) => {
-
+  console.log("hola")
     try {
       let product = req.body
-      let images = [];
   
-      if (req.files.images.length > 0) {
-  
-        req.files.images.forEach(element => {
-          images.push({
-            _id: shortid.generate(),
-            fileName: element.filename,
-            filePath: element.path,
-          });
-        });
-      }
-  
-  
-      product.images = images
       const newProduct = await Products.create(product)
   
       if (!newProduct) return res.json({ msg: "no se a podido crear el producto" });
