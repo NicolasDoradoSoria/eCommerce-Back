@@ -12,8 +12,9 @@ export const register = async (req, res) => {
         user.password = await bcryptjs.hash(password, salt)
 
         const newUser = await User.create(user)
+        console.log(newUser)
+        const payload = { user: { id: newUser._id } };
 
-        const payload = { user: { id: newUser.id } };
         jwt.sign(payload, process.env.SECRETA, { expiresIn: 3600, },
             (error, token) => {
                 if (error) throw error;

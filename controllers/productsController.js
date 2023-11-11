@@ -62,3 +62,27 @@ export const getProductById = async (req, res) => {
     res.status(500).send("hubo un error");
   }
 };
+
+//elimina producto por id
+export const deleteProductById = async (req, res) => {
+  
+  console.log("product")
+  try {
+    const _id = req.params.productId
+    
+    const product = await Products.find({ _id });
+    //si el producto existe o no
+    if (!product[0]) {
+      return res.status(404).json({ msg: "no existe ese producto" });
+    }
+    const deletedProduct = await productRepo.delete(_id)
+
+    if (!deletedProduct) {
+      return res.status(404).json({ msg: "no se a podido eliminar el producto" });
+    }
+
+    res.json({ msg: "se a eliminado el producto correctamente" });
+  } catch (error) {
+    res.status(500).send("hubo un error");
+  }
+};
