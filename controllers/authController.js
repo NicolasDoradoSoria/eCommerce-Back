@@ -12,7 +12,6 @@ export const register = async (req, res) => {
         user.password = await bcryptjs.hash(password, salt)
 
         const newUser = await User.create(user)
-        console.log(newUser)
         const payload = { user: { id: newUser._id } };
 
         jwt.sign(payload, process.env.SECRETA, { expiresIn: 3600, },
@@ -34,12 +33,13 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
     try {
         const user = await User.find({email})
+        console.log(user[0])
         if (!user[0]) return res.status(400).json({ msg: "el usuario no existe" });
         
         const correctPass = await bcryptjs.compare(password, user[0].password);
         if (!correctPass) return res.status(401).json({ msg: "password incorrecto" });
         
-        const payload = { user: { id: user.id } };
+        const payload = { user: { id: user[0]._id } };
         //firmar el JWT
         jwt.sign(
             payload, process.env.SECRETA, { expiresIn: 36000, },

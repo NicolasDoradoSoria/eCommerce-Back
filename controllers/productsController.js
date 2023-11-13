@@ -1,10 +1,16 @@
 import ProductByCategory from '../data/ProductByCategory';
+import Category from '../models/Category';
 import Products from '../models/Products'
 
 // agrega un producto
 export const postProducts = async (req, res) => {
   try {
     let product = req.body
+    const { category } = req.body
+    
+    const categorySearch = await Category.find({ category });
+
+    if (!categorySearch) return res.status(400).send("Invalid Category");
 
     const newProduct = await Products.create(product)
 
