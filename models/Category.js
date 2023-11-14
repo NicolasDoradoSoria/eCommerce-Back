@@ -6,6 +6,11 @@ const CategorySchema = new Schema({
     trim: true,
     unique: true,
   },
+  path: {
+    type: String,
+    trim: true,
+    unique: true,
+  }
 }, {
   versionKey: false
 });
