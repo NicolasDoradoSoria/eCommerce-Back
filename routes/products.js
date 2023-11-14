@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { deleteProductById, getProductById, getProducts, postProducts } from "../controllers/productsController";
+import { deleteProductById, getProductById, getProducts, postProducts, searchProducts } from "../controllers/productsController";
 import { verifyToken } from "../middleware/verifyToken";
 
 
@@ -9,5 +9,6 @@ router.post('/',verifyToken, postProducts)
 router.get('/', getProducts)
 router.get('/:productId', getProductById)
 router.delete("/:productId",[verifyToken], deleteProductById)
+router.post("/searchProducts", searchProducts);
 
 module.exports = router;

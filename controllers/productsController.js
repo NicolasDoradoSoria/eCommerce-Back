@@ -91,3 +91,23 @@ export const deleteProductById = async (req, res) => {
     res.status(500).send("hubo un error");
   }
 };
+
+// search de productos
+export const searchProducts = async (req, res) => {
+  try {
+    let products = await Products.find({});
+    
+    if (!req.body.name) {
+      return res.status(200).json({ products });
+    }
+    const searchTerm = req.body.name.toLowerCase();
+    const regex = new RegExp('^' + searchTerm, 'i'); // 'i' para ignorar mayúsculas/minúsculas
+
+    products = products.filter(product => regex.test(product.name.toLowerCase()));
+
+    res.status(200).json({ products });
+
+  } catch (error) {
+    res.status(500).send("hubo un error");
+  }
+};
