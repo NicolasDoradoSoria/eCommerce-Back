@@ -9,7 +9,6 @@ const CategorySchema = new Schema({
   path: {
     type: String,
     trim: true,
-    unique: true,
   }
 }, {
   versionKey: false
