@@ -7,7 +7,7 @@ export const postProducts = async (req, res) => {
   try {
     let product = req.body
     const { category } = req.body
-    
+
     const categorySearch = await Category.find({ category });
 
     if (!categorySearch) return res.status(400).send("Invalid Category");
@@ -29,11 +29,16 @@ export const getProducts = async (req, res) => {
 
   const { header, type, page, limit } = req.query
   try {
+    let filter = {};
+    if (req.body.name) {
+      const searchTerm = req.body.name.toLowerCase();
+      const regex = new RegExp('^' + searchTerm, 'i'); // 'i' para ignorar mayúsculas/minúsculas
+      filter = { ...filter, name: regex }
+    }
     // el numero de pagina
     const PAGE = parseInt(page) || 0
     // el limite de productos por pagina
     const LIMIT = parseInt(limit) || 12
-    let filter = {};
 
     let products = await ProductByCategory({ filter, PAGE, LIMIT })
 
@@ -71,14 +76,14 @@ export const getProductById = async (req, res) => {
 
 //elimina producto por id
 export const deleteProductById = async (req, res) => {
-  
+
   try {
     const _id = req.params.productId
-    
+
     const product = await Products.find({ _id });
     //si el producto existe o no
     if (!product[0]) {
-      return res.status(404).json({ msg: "no existe ese producto"});
+      return res.status(404).json({ msg: "no existe ese producto" });
     }
     const deletedProduct = await Products.findByIdAndDelete(_id)
 
@@ -96,7 +101,7 @@ export const deleteProductById = async (req, res) => {
 export const searchProducts = async (req, res) => {
   try {
     let products = await Products.find({});
-    
+
     if (!req.body.name) {
       return res.status(200).json({ products });
     }

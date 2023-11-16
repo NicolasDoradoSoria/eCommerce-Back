@@ -7,7 +7,7 @@ import { validateProduct } from "../middleware/validators/auth";
 const router = Router();
 
 router.post('/',[verifyToken, validateProduct], postProducts)
-router.get('/', getProducts)
+router.post('/searchProducts', getProducts)
 router.get('/:productId', getProductById)
 router.delete("/:productId",[verifyToken], deleteProductById)
 router.post("/searchProducts", searchProducts);
