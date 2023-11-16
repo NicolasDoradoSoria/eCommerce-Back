@@ -17,6 +17,12 @@ const userSchema = Schema(
             type: Date,
             default: Date.now(),
         },
+        roles: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: "Role",
+            }
+        ],
     },
     {
         timestamps: true,

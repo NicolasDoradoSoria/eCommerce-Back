@@ -2,8 +2,10 @@ import cors from 'cors'
 import morgan from "morgan"
 import express from "express"
 import routes from "./routes"
+import { Roles } from './data/Roles'
 
 const app = express()
+Roles()
 
 app.use(cors())
 app.set("port", 4000)
