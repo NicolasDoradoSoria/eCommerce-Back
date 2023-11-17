@@ -17,7 +17,6 @@ export const register = async (req, res) => {
             user.roles = foundRoles.map((role) => role._id);
         } else {
             const role = await Role.find({ name: "User" })
-            console.log(role)
             user.roles = [role[0]._id];
         }
 

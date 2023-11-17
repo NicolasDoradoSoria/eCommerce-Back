@@ -67,7 +67,7 @@ export const productsList = async (req, res) => {
 export const getProductById = async (req, res) => {
   try {
     const _id = req.params.productId
-    const product = await Products.find({ _id })
+    const product = await Products.find({ _id }).populate("category")
     res.status(200).json(product[0]);
   } catch (error) {
     res.status(500).send("hubo un error");
