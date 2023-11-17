@@ -32,7 +32,7 @@ export const productsList = async (req, res) => {
     let filter = {};
     if (req.body.name) {
       const searchTerm = req.body.name.toLowerCase();
-      const regex = new RegExp('^' + searchTerm, 'i'); // 'i' para ignorar mayúsculas/minúsculas
+      const regex = new RegExp(searchTerm, 'i'); // 'i' para ignorar mayúsculas/minúsculas
       filter = { ...filter, name: regex }
     }
     // el numero de pagina
