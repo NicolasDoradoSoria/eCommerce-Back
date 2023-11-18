@@ -23,11 +23,8 @@ export const validateProduct = [
   // Validación del campo de la categoría
   check('category').custom(async (category) => {
     const categoryExists = await Category.exists({ _id: category });
-    console.log(categoryExists)
-    if (!categoryExists) {
-      throw new Error('La categoría especificada no existe');
-    }
-  }),
+  }).withMessage('la categoria no existe'),
+
   (req, res, next) => {
     validateResult(req, res, next);
   },
