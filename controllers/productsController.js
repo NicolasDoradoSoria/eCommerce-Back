@@ -1,5 +1,6 @@
 import ProductByCategory from '../data/ProductByCategory';
 import Category from '../models/Category';
+import Options from '../models/Options';
 import Products from '../models/Products'
 
 // agrega un producto
@@ -12,6 +13,23 @@ export const postProducts = async (req, res) => {
 
     if (!categorySearch) return res.status(400).send("Invalid Category");
 
+    const optionPromises = product.options.map(async (option) => {
+
+      let existingOption = await Options.findOne({ name: option.name });
+
+      if (existingOption) {
+        return existingOption._id.toString();
+      }
+      else {
+        let newOption = await Options.create(option)
+        if (!newOption) return res.json({ msg: "no se a podido crear la option" });
+        return newOption._id.toString();
+      }
+    })
+
+    const optionIds = await Promise.all(optionPromises);
+
+    product.options = optionIds;
     const newProduct = await Products.create(product)
 
     if (!newProduct) return res.json({ msg: "no se a podido crear el producto" });

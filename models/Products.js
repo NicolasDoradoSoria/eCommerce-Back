@@ -32,6 +32,11 @@ const productSchema = Schema(
             ref: "Category",
             require: true,
         },
+        options: [{
+            type: Schema.Types.ObjectId,
+            ref: "Options",
+        },
+        ],
     },
     {
         timestamps: true,

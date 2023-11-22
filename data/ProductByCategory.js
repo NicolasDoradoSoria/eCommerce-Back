@@ -6,6 +6,7 @@ const ProductByCategory = async ({ filter, PAGE, LIMIT, header = "name", type = 
     .limit(LIMIT)
     .sort({ [header]: parseInt(type) })
     .populate("category")
+    .populate("options")
 }
 
 export default ProductByCategory;
