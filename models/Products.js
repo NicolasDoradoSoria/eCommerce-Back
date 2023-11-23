@@ -40,7 +40,7 @@ const productSchema = Schema(
     },
     {
         timestamps: true,
-        versionKey: false
+        versionKey: false,
     }
 )
 export default model("Product", productSchema);

@@ -9,14 +9,19 @@ export const postProducts = async (req, res) => {
     let product = req.body
     const { category } = req.body
 
+    // busca la categoria
     const categorySearch = await Category.find({ category });
 
+    // si la categoria es invalida tira error
     if (!categorySearch) return res.status(400).send("Invalid Category");
+
 
     const optionPromises = product.options.map(async (option) => {
 
+      // busca si expliste la option
       let existingOption = await Options.findOne({ name: option.name });
 
+      // si existe directamente retorna si no existe la crea en el modelo
       if (existingOption) {
         return existingOption._id.toString();
       }
@@ -30,7 +35,10 @@ export const postProducts = async (req, res) => {
     const optionIds = await Promise.all(optionPromises);
 
     product.options = optionIds;
+
     const newProduct = await Products.create(product)
+
+   
 
     if (!newProduct) return res.json({ msg: "no se a podido crear el producto" });
 
