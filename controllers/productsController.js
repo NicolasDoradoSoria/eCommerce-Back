@@ -127,14 +127,6 @@ export const findProductsByOption = async (req, res) => {
   try {
     const { optionValue, optionPassword } = req.body; // Valor de la opción a buscar, por ejemplo, 'XXL'
 
-    // Verifica si se proporcionó el valor de la opción en el cuerpo de la solicitud
-    if (!optionValue) {
-      return res.status(400).json({ error: "Se requiere 'optionValue' en el cuerpo de la solicitud" });
-    }
-    if (!optionPassword) {
-      return res.status(400).json({ error: "Se requiere 'optionPassword' en el cuerpo de la solicitud" });
-    }
-
     const products = await Products.find({ options: { $exists: true, $ne: [] } }).populate("options");
     const filteredProducts = products.filter(product => {
       return product.options.some(option => {
