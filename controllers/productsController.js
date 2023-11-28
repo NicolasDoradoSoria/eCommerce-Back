@@ -38,7 +38,7 @@ export const postProducts = async (req, res) => {
 
     const newProduct = await Products.create(product)
 
-   
+
 
     if (!newProduct) return res.json({ msg: "no se a podido crear el producto" });
 
@@ -50,7 +50,7 @@ export const postProducts = async (req, res) => {
     res.status(500).send("hubo un error");
   }
 };
-
+// devuelve los productos ordena y paginacion y hace la busqueda
 export const productsList = async (req, res) => {
 
   const { header, type, page, limit } = req.query
@@ -123,3 +123,30 @@ export const deleteProductById = async (req, res) => {
   }
 };
 
+export const findProductsByOption = async (req, res) => {
+  try {
+    const { optionValue, optionPassword } = req.body; // Valor de la opción a buscar, por ejemplo, 'XXL'
+
+    // Verifica si se proporcionó el valor de la opción en el cuerpo de la solicitud
+    if (!optionValue) {
+      return res.status(400).json({ error: "Se requiere 'optionValue' en el cuerpo de la solicitud" });
+    }
+    if (!optionPassword) {
+      return res.status(400).json({ error: "Se requiere 'optionPassword' en el cuerpo de la solicitud" });
+    }
+
+    const products = await Products.find({ options: { $exists: true, $ne: [] } }).populate("options");
+    const filteredProducts = products.filter(product => {
+      return product.options.some(option => {
+        return Object.keys(option.toObject()).some(key => {
+          return key === optionPassword && option[key] === optionValue;
+        });
+      });
+    });
+
+    res.json(filteredProducts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Hubo un error al buscar productos por opción");
+  }
+};
