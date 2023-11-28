@@ -47,7 +47,7 @@ export const login = async (req, res) => {
         const correctPass = await bcryptjs.compare(password, user[0].password);
         if (!correctPass) return res.status(401).json({ msg: "password incorrecto" });
 
-        const payload = { user: { id: user[0]._id, role: user.role,  } };
+        const payload = { user: { id: user[0]._id, role: user.role, } };
         //firmar el JWT
         jwt.sign(
             payload, process.env.SECRETA, { expiresIn: 36000, },
