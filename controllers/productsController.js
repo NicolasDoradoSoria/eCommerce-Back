@@ -14,34 +14,19 @@ export const postProducts = async (req, res) => {
 
     // si la categoria es invalida tira error
     if (!categorySearch) return res.status(400).send("Invalid Category");
-
-
     const optionPromises = product.options.map(async (option) => {
-
-      // busca si expliste la option
-      let existingOption = await Options.findOne({ name: option.name });
-
-      // si existe directamente retorna si no existe la crea en el modelo
-      if (existingOption) {
-        return existingOption._id.toString();
-      }
-      else {
-        let newOption = await Options.create(option)
-        if (!newOption) return res.json({ msg: "no se a podido crear la option" });
-        return newOption._id.toString();
-      }
+      let newOption = await Options.create({ option, productId: null })
+      return newOption._id.toString();
     })
-
     const optionIds = await Promise.all(optionPromises);
 
     product.options = optionIds;
 
     const newProduct = await Products.create(product)
-
-
+    // Actualiza el productId en las opciones con el _id del producto recién creado
+    await Options.updateMany({ _id: { $in: optionIds } }, { productId: newProduct._id });
 
     if (!newProduct) return res.json({ msg: "no se a podido crear el producto" });
-
 
     res.json({ msg: "se a agregado el producto correctamente" });
 
@@ -73,7 +58,6 @@ export const productsList = async (req, res) => {
     // calcula el total de paginas segun lo que de TOTAL_PRODUCTS / limit
     // const TOTAL_PAGES = Math.trunc(TOTAL_PRODUCTS.length / limit)
     const TOTAL_PAGES = Math.ceil(TOTAL_PRODUCTS.length / limit)
-
     if (req.query.id) {
       filter = { category: req.query.id.split(",") };
     }
@@ -127,18 +111,29 @@ export const findProductsByOption = async (req, res) => {
   try {
     const { optionValue, optionPassword } = req.body; // Valor de la opción a buscar, por ejemplo, 'XXL'
 
-    const products = await Products.find({ options: { $exists: true, $ne: [] } }).populate("options");
-    const filteredProducts = products.filter(product => {
-      return product.options.some(option => {
-        return Object.keys(option.toObject()).some(key => {
-          return key === optionPassword && option[key] === optionValue;
-        });
-      });
-    });
+    const query = {};
+    query[`option.${optionPassword}`] = optionValue;
 
-    res.json(filteredProducts);
+    const options = await Options.find(query).populate('productId').exec();
+    
+    const products = options.map(option => option.productId);
+
+  
+    res.json(products);
   } catch (error) {
     console.error(error);
     res.status(500).send("Hubo un error al buscar productos por opción");
   }
 };
+
+export const searchOption = async (req, res) => {
+
+try {
+  const option = await Options.find({})
+  res.json(option);
+
+} catch (error) {
+  console.error(error);
+  
+}
+}
