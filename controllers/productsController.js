@@ -40,6 +40,7 @@ export const productsList = async (req, res) => {
 
   const { header, type, page, limit } = req.query
   try {
+    let TOTAL_PAGES = null
     let filter = {};
     if (req.body.name) {
       const searchTerm = req.body.name.toLowerCase();
@@ -57,7 +58,14 @@ export const productsList = async (req, res) => {
     const TOTAL_PRODUCTS = await Products.find({})
     // calcula el total de paginas segun lo que de TOTAL_PRODUCTS / limit
     // const TOTAL_PAGES = Math.trunc(TOTAL_PRODUCTS.length / limit)
-    const TOTAL_PAGES = Math.ceil(TOTAL_PRODUCTS.length / limit)
+    if (limit) {
+      TOTAL_PAGES = Math.ceil(TOTAL_PRODUCTS.length / limit)
+    }
+    else {
+      TOTAL_PAGES =  Math.ceil(products.length / 6)
+    }
+    console.log(TOTAL_PAGES)
+
     if (req.query.id) {
       filter = { category: req.query.id.split(",") };
     }
@@ -146,8 +154,8 @@ export const searchOption = async (req, res) => {
         });
       }
     });
-     // Crear un array con objetos { key, clave } para devolver los nombres de las claves y sus valores
-     const result = Object.keys(keyValues).map(key => ({ key, clave: keyValues[key] }));
+    // Crear un array con objetos { key, clave } para devolver los nombres de las claves y sus valores
+    const result = Object.keys(keyValues).map(key => ({ key, clave: keyValues[key] }));
 
     res.json(result);
 
