@@ -115,10 +115,10 @@ export const findProductsByOption = async (req, res) => {
     query[`option.${optionPassword}`] = optionValue;
 
     const options = await Options.find(query).populate('productId').exec();
-    
+
     const products = options.map(option => option.productId);
 
-  
+
     res.json(products);
   } catch (error) {
     console.error(error);
@@ -128,12 +128,31 @@ export const findProductsByOption = async (req, res) => {
 
 export const searchOption = async (req, res) => {
 
-try {
-  const option = await Options.find({})
-  res.json(option);
+  try {
+    const options = await Options.find({})
 
-} catch (error) {
-  console.error(error);
-  
-}
+    // Array para almacenar los nombres de las claves
+    const keyValues = {};
+
+    // Recorrer cada opción para extraer los nombres de las claves
+    options.forEach(option => {
+      if (option.option) {
+        const optionKeys = Object.keys(option.option); // Obtener las claves de attributes
+        optionKeys.forEach(key => {
+          // Agregar el nombre de la clave al array si no está presente
+          if (!keyValues[key]) {
+            keyValues[key] = option.option[key];
+          }
+        });
+      }
+    });
+     // Crear un array con objetos { key, clave } para devolver los nombres de las claves y sus valores
+     const result = Object.keys(keyValues).map(key => ({ key, clave: keyValues[key] }));
+
+    res.json(result);
+
+  } catch (error) {
+    console.error(error);
+
+  }
 }
