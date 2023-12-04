@@ -12,7 +12,6 @@ export const verifyToken = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.SECRETA)
     req.userId = decoded.user.id
-    console.log(process.env.SECRETA)
     const user = await User.findById(req.userId, { password: 0 });
     if (!user) return res.status(404).json({ message: "No user found" });
     next()

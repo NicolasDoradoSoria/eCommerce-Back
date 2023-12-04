@@ -64,7 +64,6 @@ export const productsList = async (req, res) => {
     else {
       TOTAL_PAGES =  Math.ceil(products.length / 6)
     }
-    console.log(TOTAL_PAGES)
 
     if (req.query.id) {
       filter = { category: req.query.id.split(",") };

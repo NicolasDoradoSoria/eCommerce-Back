@@ -9,13 +9,12 @@ export const postFavoriteProduct = async (req, res) => {
             .populate({ path: "favoriteProducts", model: "Product" })
             .populate({ path: 'favoriteProducts', populate: { path: 'category', model: 'Category' } })
             .exec()
-            
         let product = await Products.find({ _id: id })
 
         if (!product[0]) return res.status(404).json({ msg: "el producto no existe" });
 
         if (favorite[0]) {
-            favorite[0].Favorite.push(id);
+            favorite[0].favoriteProducts.push(id);
             await favorite[0].save();
             return res.json({ msg: "el producto a sido agregado correctamente a la lista de favoritos" });
         }
@@ -50,5 +49,32 @@ export const getFavoriteProduct = async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({ msg: 'hubo un error' })
+    }
+}
+
+export const deleteFavoriteProduct = async (req, res) => {
+    const { productId } = req.params
+
+
+    try {
+
+        const filter = { user: req.userId, favoriteProducts: productId };
+
+        // Verificar si el producto está en la lista de favoritos
+        const favorite = await Favorite.findOne(filter);
+
+        if(!favorite) return res.json({ msg: "el producto no se encuentra en la lista de favorito del usuario" })
+
+        const deletedFavorite = await Favorite.findOneAndUpdate(
+            { user: req.userId },
+            { $pull: { favoriteProducts: productId } },
+            { new: true }
+        );
+        if (!deletedFavorite || deletedFavorite.favoriteProducts.includes(productId)) return res.json({ msg: "el producto de favoritos no se a podido eliminar" })
+
+        res.json({ msg: "el producto de favoritos se a eliminado" })
+
+    } catch (error) {
+        res.status(500).send("hubo un error");
     }
 }
