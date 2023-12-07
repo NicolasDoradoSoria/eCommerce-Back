@@ -1,3 +1,5 @@
+import fs from 'fs-extra';
+import { deleteImage, uploadImage } from '../config/cloudinary';
 import ProductByCategory from '../data/ProductByCategory';
 import Category from '../models/Category';
 import Options from '../models/Options';
@@ -11,28 +13,47 @@ export const postProducts = async (req, res) => {
 
     // busca la categoria
     const categorySearch = await Category.find({ category });
+    let image = []
+    if (req.files?.image) {
+      const uploadPromises = req.files.image.map(async (element) => {
+        const result = await uploadImage(element.tempFilePath)
+        return { public_id: result.public_id, secure_url: result.secure_url }
 
+      })
+      req.files.image.map(async (element) => {
+        await fs.unlink(element.tempFilePath)
+      })
+      image = await Promise.all(uploadPromises);
+      product.image = image
+
+    }
     // si la categoria es invalida tira error
     if (!categorySearch) return res.status(400).send("Invalid Category");
-    const optionPromises = product.options.map(async (option) => {
-      let newOption = await Options.create({ option, productId: null })
-      return newOption._id.toString();
-    })
-    const optionIds = await Promise.all(optionPromises);
 
-    product.options = optionIds;
+    if (product.options) {
+
+      const optionPromises = product.options.map(async (option) => {
+        let newOption = await Options.create({ option, productId: null })
+        return newOption._id.toString();
+      })
+      const optionIds = await Promise.all(optionPromises);
+
+      product.options = optionIds;
+    }
 
     const newProduct = await Products.create(product)
     // Actualiza el productId en las opciones con el _id del producto recién creado
-    await Options.updateMany({ _id: { $in: optionIds } }, { productId: newProduct._id });
+    if (product.options) {
+      await Options.updateMany({ _id: { $in: optionIds } }, { productId: newProduct._id });
 
+    }
     if (!newProduct) return res.json({ msg: "no se a podido crear el producto" });
 
     res.json({ msg: "se a agregado el producto correctamente" });
 
   } catch (error) {
     console.log(error);
-    res.status(500).send("hubo un error");
+    res.status(500).json({ msg: error.message });
   }
 };
 // devuelve los productos ordena y paginacion y hace la busqueda
@@ -62,7 +83,7 @@ export const productsList = async (req, res) => {
       TOTAL_PAGES = Math.ceil(TOTAL_PRODUCTS.length / limit)
     }
     else {
-      TOTAL_PAGES =  Math.ceil(products.length / 6)
+      TOTAL_PAGES = Math.ceil(products.length / 6)
     }
 
     if (req.query.id) {
@@ -76,7 +97,7 @@ export const productsList = async (req, res) => {
 
   } catch (error) {
     console.log(error)
-    res.status(500).send("hubo un error");
+    res.status(500).json({ msg: error.message });
   }
 };
 
@@ -87,7 +108,8 @@ export const getProductById = async (req, res) => {
     const product = await Products.find({ _id }).populate("category")
     res.status(200).json(product[0]);
   } catch (error) {
-    res.status(500).send("hubo un error");
+    res.status(500).json({ msg: error.message });
+
   }
 };
 
@@ -107,10 +129,14 @@ export const deleteProductById = async (req, res) => {
     if (!deletedProduct) {
       return res.status(404).json({ msg: "no se a podido eliminar el producto" });
     }
-
+    product.image.map(async (element) => {
+      await deleteImage(element.public_id)
+    })
+    await deleteImage(product.image)
     res.json({ msg: "se a eliminado el producto correctamente" });
   } catch (error) {
-    res.status(500).send("hubo un error");
+    res.status(500).json({ msg: error.message });
+
   }
 };
 
@@ -129,7 +155,8 @@ export const findProductsByOption = async (req, res) => {
     res.json(products);
   } catch (error) {
     console.error(error);
-    res.status(500).send("Hubo un error al buscar productos por opción");
+    res.status(500).json({ msg: error.message });
+
   }
 };
 
@@ -160,6 +187,7 @@ export const searchOption = async (req, res) => {
 
   } catch (error) {
     console.error(error);
+    res.status(500).json({ msg: error.message });
 
   }
 }

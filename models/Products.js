@@ -23,8 +23,8 @@ const productSchema = Schema(
         },
         images: [
             {
-                type: String,
-                required: true,
+                public_id: String,
+                secure_url: String,
             }
         ],
         category: {
