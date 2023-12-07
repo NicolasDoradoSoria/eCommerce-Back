@@ -14,6 +14,7 @@ export const postProducts = async (req, res) => {
     // busca la categoria
     const categorySearch = await Category.find({ category });
     let image = []
+    let optionIds 
     if (req.files?.image) {
       const uploadPromises = req.files.image.map(async (element) => {
         const result = await uploadImage(element.tempFilePath)
@@ -36,7 +37,7 @@ export const postProducts = async (req, res) => {
         let newOption = await Options.create({ option, productId: null })
         return newOption._id.toString();
       })
-      const optionIds = await Promise.all(optionPromises);
+      optionIds = await Promise.all(optionPromises);
 
       product.options = optionIds;
     }
