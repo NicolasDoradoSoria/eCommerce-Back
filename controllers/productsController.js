@@ -20,12 +20,12 @@ export const postProducts = async (req, res) => {
         return { public_id: result.public_id, secure_url: result.secure_url }
 
       })
+      image = await Promise.all(uploadPromises);
+      product.image = image
+      
       req.files.image.map(async (element) => {
         await fs.unlink(element.tempFilePath)
       })
-      image = await Promise.all(uploadPromises);
-      product.image = image
-
     }
     // si la categoria es invalida tira error
     if (!categorySearch) return res.status(400).send("Invalid Category");

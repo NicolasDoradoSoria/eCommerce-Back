@@ -21,7 +21,7 @@ const productSchema = Schema(
             required: true,
             trim: true,
         },
-        images: [
+        image: [
             {
                 public_id: String,
                 secure_url: String,
