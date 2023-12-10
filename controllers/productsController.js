@@ -14,7 +14,7 @@ export const postProducts = async (req, res) => {
     // busca la categoria
     const categorySearch = await Category.find({ category });
     let image = []
-    let optionIds 
+    let optionIds
     if (req.files?.image) {
       const uploadPromises = req.files.image.map(async (element) => {
         const result = await uploadImage(element.tempFilePath)
@@ -23,7 +23,7 @@ export const postProducts = async (req, res) => {
       })
       image = await Promise.all(uploadPromises);
       product.image = image
-      
+
       req.files.image.map(async (element) => {
         await fs.unlink(element.tempFilePath)
       })
@@ -146,12 +146,20 @@ export const findProductsByOption = async (req, res) => {
     const { optionValue, optionPassword } = req.body; // Valor de la opción a buscar, por ejemplo, 'XXL'
 
     const query = {};
-    query[`option.${optionPassword}`] = optionValue;
+
+    if (optionValue) {
+      query[`option.${optionPassword}`] = optionValue;
+    } else {
+      query[`option.${optionPassword}`] = { $exists: true };
+    }
 
     const options = await Options.find(query).populate('productId').exec();
+    const productIds = options
+      .filter(option => option.productId !== null && option.productId !== undefined)
+      .map(option => option.productId);
 
-    const products = options.map(option => option.productId);
-
+    // Realizar una consulta para obtener los productos basados en los IDs
+    const products = await Products.find({ _id: { $in: productIds } }).populate('options').exec();
 
     res.json(products);
   } catch (error) {
