@@ -13,42 +13,56 @@ export const postProducts = async (req, res) => {
 
     // busca la categoria
     const categorySearch = await Category.find({ category });
+
+    if (categorySearch.length === 0) return res.status(400).send("Invalid Category");
+
     let image = []
-    let optionIds
+    let optionIds = []
+
+    // Subir imágenes si existen en la solicitud
     if (req.files?.image) {
       const uploadPromises = req.files.image.map(async (element) => {
         const result = await uploadImage(element.tempFilePath)
         return { public_id: result.public_id, secure_url: result.secure_url }
-
       })
+
       image = await Promise.all(uploadPromises);
       product.image = image
 
+      // Eliminar imágenes temporales después de la carga
       req.files.image.map(async (element) => {
         await fs.unlink(element.tempFilePath)
       })
     }
-    // si la categoria es invalida tira error
-    if (!categorySearch) return res.status(400).send("Invalid Category");
 
+    // Crear opciones si están presentes en el producto
     if (product.options) {
-
       const optionPromises = product.options.map(async (option) => {
         let newOption = await Options.create({ option, productId: null })
         return newOption._id.toString();
       })
+
       optionIds = await Promise.all(optionPromises);
 
       product.options = optionIds;
     }
 
-    const newProduct = await Products.create(product)
+    let newProduct
+
+    try {
+      newProduct = await Products.create(product)
+    } catch (error) {
+      if (optionIds.length > 0) {
+        await Options.deleteMany({ _id: { $in: optionIds } });
+      }
+      throw error; // Propagar el error original 
+    }
+
     // Actualiza el productId en las opciones con el _id del producto recién creado
-    if (product.options) {
+    if (product.options.length > 0) {
       await Options.updateMany({ _id: { $in: optionIds } }, { productId: newProduct._id });
 
     }
-    if (!newProduct) return res.json({ msg: "no se a podido crear el producto" });
 
     res.json({ msg: "se a agregado el producto correctamente" });
 
