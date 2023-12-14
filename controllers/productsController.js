@@ -13,7 +13,6 @@ export const postProducts = async (req, res) => {
 
     // busca la categoria
     const categorySearch = await Category.find({_id: category });
-    console.log(categorySearch)
     if (categorySearch.length === 0) return res.status(400).send("Invalid Category");
 
     let image = []
