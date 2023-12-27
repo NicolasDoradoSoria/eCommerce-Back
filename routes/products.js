@@ -13,7 +13,7 @@ router.post('/',[verifyToken, validateProduct, isAdmin, fileUpload({
     tempFileDir: "./uploads"
 })], postProducts)
 router.post('/searchProducts', productsList)
-router.post('/searchOptions',validateProductsByOption, findProductsByOption)
+router.post('/searchOptions', findProductsByOption)
 router.get('/searchOptions', searchOption)
 router.get('/:productId', getProductById)
 router.delete("/:productId",[verifyToken, isAdmin, fileUpload({

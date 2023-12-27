@@ -12,7 +12,7 @@ export const postProducts = async (req, res) => {
     const { category } = req.body
 
     // busca la categoria
-    const categorySearch = await Category.find({_id: category });
+    const categorySearch = await Category.find({ _id: category });
     if (categorySearch.length === 0) return res.status(400).send("Invalid Category");
 
     let image = []
@@ -156,17 +156,22 @@ export const deleteProductById = async (req, res) => {
 
 export const findProductsByOption = async (req, res) => {
   try {
-    const { optionValue, optionPassword } = req.body; // Valor de la opción a buscar, por ejemplo, 'XXL'
+    const { optionsArray } = req.body;
 
-    const query = {};
+    const queryArray = [];
 
-    if (optionValue) {
-      query[`option.${optionPassword}`] = optionValue;
-    } else {
-      query[`option.${optionPassword}`] = { $exists: true };
-    }
+    optionsArray.forEach(({ optionValue, optionPassword }) => {
+      const query = {};
+      
+      if (optionValue) {
+        query[`option.${optionPassword}`] = optionValue;
+      } else {
+        query[`option.${optionPassword}`] = { $exists: true };
+      }
 
-    const options = await Options.find(query).populate('productId').exec();
+      queryArray.push(query)
+    })
+    const options = await Options.find({ $or: queryArray }).populate('productId').exec();
     const productIds = options
       .filter(option => option.productId !== null && option.productId !== undefined)
       .map(option => option.productId);
