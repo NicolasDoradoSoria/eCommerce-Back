@@ -122,6 +122,7 @@ export const getProductById = async (req, res) => {
     const product = await Products.find({ _id }).populate("category")
     res.status(200).json(product[0]);
   } catch (error) {
+    console.log(error)
     res.status(500).json({ msg: error.message });
 
   }
@@ -134,21 +135,34 @@ export const deleteProductById = async (req, res) => {
     const _id = req.params.productId
 
     const product = await Products.find({ _id });
+
     //si el producto existe o no
     if (!product[0]) {
       return res.status(404).json({ msg: "no existe ese producto" });
     }
+    if (product.options && product.options.length > 0) {
+
+      const deletedOptions = await Options.findByIdAndDelete(product[0].options)
+
+      if (!deletedOptions) {
+        return res.status(404).json({ msg: "no se a podido eliminar la option" });
+      }
+
+    }
+
     const deletedProduct = await Products.findByIdAndDelete(_id)
 
     if (!deletedProduct) {
       return res.status(404).json({ msg: "no se a podido eliminar el producto" });
     }
-    product.image.map(async (element) => {
-      await deleteImage(element.public_id)
-    })
-    await deleteImage(product.image)
+    if (Array.isArray(product.image) && product.image.length > 0) {
+      await Promise.all(product.image.map(async (element) => {
+        await deleteImage(element.public_id)
+      }))
+    }
     res.json({ msg: "se a eliminado el producto correctamente" });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ msg: error.message });
 
   }
@@ -162,7 +176,7 @@ export const findProductsByOption = async (req, res) => {
 
     optionsArray.forEach(({ optionValue, optionPassword }) => {
       const query = {};
-      
+
       if (optionValue) {
         query[`option.${optionPassword}`] = optionValue;
       } else {
