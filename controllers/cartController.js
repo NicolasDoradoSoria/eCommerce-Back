@@ -10,10 +10,9 @@ export const generateOrder = async (req, res) => {
     // devuelve el usuario logeado
     const userId = req.userId
     //devuelve el carrito si es que existe si no existe crea uno
-    let cart = await Cart.find({ user: userId }).populate({ path: "products.id", model: "Cart" })
+    let cart = await Cart.find({ user: userId }).populate({ path: "products.id", model: "Product" })
     //devuelve el producto que se va a agregar al carrito
     let product = await Products.find({ _id: id })
-    console.log(product)
     if (!product[0]) return res.status(404).json({ msg: "el producto no existe" });
 
     // si existe un carrito 
