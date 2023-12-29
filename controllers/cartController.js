@@ -80,10 +80,10 @@ export const getCart = async (req, res) => {
 //elimina un producto por ID del carrito
 export const deleteProductCart = async (req, res) => {
 
-  const { idUser, idCart } = req.params
-  
+  const {idCart } = req.params
+  const userId = req.userId
   try {
-    const deletedcart = await await Cart.findOneAndUpdate({ user: idUser }, { $pull: { products: { _id: idCart } } });
+    const deletedcart = await Cart.findOneAndUpdate({ user: userId }, { $pull: { products: { id: idCart } } });
 
     if (!deletedcart) return res.json({ msg: "el producto del carrito no se a podido eliminar" })
 
@@ -100,8 +100,9 @@ export const deleteProductCart = async (req, res) => {
 //elimina todos los productos del carrito por ID
 export const deleteOrder = async (req, res) => {
   try {
-    const user = req.params.idUser
-    await Cart.findOneAndDelete(user)
+    const userId = req.userId
+    
+    await Cart.findOneAndDelete(userId)
     res.json({ msg: "el carrito fue limpieado correctamente" })
   } catch (error) {
     console.log(error)

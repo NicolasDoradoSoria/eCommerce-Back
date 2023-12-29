@@ -7,6 +7,6 @@ const router = Router();
 router.post("/", verifyToken , generateOrder);
 router.post("/summary", verifyToken, summary);
 router.get("/", verifyToken, getCart);
-router.delete("/:idUser",verifyToken, deleteOrder);
-router.delete("/:idUser/:idCart",verifyToken, deleteProductCart);
+router.delete("/",verifyToken, deleteOrder);
+router.delete("/:idCart",verifyToken, deleteProductCart);
 module.exports = router;
