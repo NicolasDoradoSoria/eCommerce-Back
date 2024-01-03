@@ -9,45 +9,59 @@ export const generateOrder = async (req, res) => {
 
     // devuelve el usuario logeado
     const userId = req.userId
+
     //devuelve el carrito si es que existe si no existe crea uno
-    let cart = await Cart.find({ user: userId }).populate({ path: "products.id", model: "Product" })
+    let cart = await Cart.findOneAndUpdate(
+      { user: userId },
+      { $setOnInsert: { user: userId } },
+      { upsert: true, new: true, populate: { path: "products.id", model: "Product" } }
+    );
     //devuelve el producto que se va a agregar al carrito
-    let product = await Products.find({ _id: id })
-    if (!product[0]) return res.status(404).json({ msg: "el producto no existe" });
+    let product = await Products.findById(id);
+
+    if (!product) return res.status(404).json({ msg: "el producto no existe" });
 
     // si existe un carrito 
-    if (cart[0]) {
-      let itemIndex = cart[0].products.findIndex(product => product.id._id == id);
+    if (cart) {
+      let itemIndex = cart.products.findIndex(product => product.id._id == id);
       //product exists in the cart, update the quantity
       if (itemIndex > -1) {
-        let productItem = cart[0].products[itemIndex]
+        let productItem = cart.products[itemIndex]
 
         productItem.quantity += quantity;
         // si la cantidad es positiva multiplica la cantidad por el precio unitario y lo guarda en productItem.id.price si es 
         // negativa la cantidad le resto productItem.id.price al total
-        quantity >= 1 ? productItem.price = productItem.id.price * productItem.quantity : productItem.price = productItem.price - productItem.id.price
+        quantity > 0 ? productItem.price = productItem.id.price * productItem.quantity : productItem.price = productItem.price - productItem.id.price
 
-        cart[0].products[itemIndex] = productItem;
+        cart.products[itemIndex] = productItem;
       }
       else {
         //product does not exists in cart, add new item
-        const price = quantity * product[0].price
-
-        cart[0].products.push({ id, quantity, price });
+        const price = quantity * product.price
+        // calulo el subtotal sin descuento
+        cart.subtotal = cart.products.reduce((productAnt, productActual) => {
+          return productAnt + productActual.quantity
+        }, 0)
+        cart.products.push({ id, quantity, price });
       }
 
-      await cart[0].save();
+      await cart.save();
       return res.json({ msg: "el producto a sido agregado correctamente" });
     }
     else {
       //no cart for user, create new cart
-      const price = product[0].price * quantity
+      const price = product.price * quantity
       // es el precio unitario por la cantidad
+      // calulo el subtotal sin descuento
+      const subtotal = cart.products.reduce((productAnt, productActual) => {
+        return productAnt + productActual.quantity
+      }, 0)
+
       const newCart = Cart.create({
         user: userId,
         products: [{ id, quantity, price }],
+        subtotal
       })
-
 
       if (!newCart) return res.status(404).json({ msg: "no se a podido crear el producto" });
 
@@ -68,7 +82,7 @@ export const getCart = async (req, res) => {
     const cart = await Cart.find({ user: userId }).populate({ path: "products.id", model: "Product" })
 
     if (cart.length == 0) return res.status(404).json({ msg: "el carrito no a sido creado" })
-    
+
     //mostrar el carrito
     res.json(cart);
   } catch (error) {
@@ -80,7 +94,7 @@ export const getCart = async (req, res) => {
 //elimina un producto por ID del carrito
 export const deleteProductCart = async (req, res) => {
 
-  const {idCart } = req.params
+  const { idCart } = req.params
   const userId = req.userId
   try {
     const deletedcart = await Cart.findOneAndUpdate({ user: userId }, { $pull: { products: { id: idCart } } });
@@ -101,7 +115,7 @@ export const deleteProductCart = async (req, res) => {
 export const deleteOrder = async (req, res) => {
   try {
     const userId = req.userId
-    
+
     await Cart.findOneAndDelete(userId)
     res.json({ msg: "el carrito fue limpieado correctamente" })
   } catch (error) {
