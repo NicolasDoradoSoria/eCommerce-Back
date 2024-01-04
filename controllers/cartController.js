@@ -31,20 +31,21 @@ export const generateOrder = async (req, res) => {
         productItem.quantity += quantity;
         // si la cantidad es positiva multiplica la cantidad por el precio unitario y lo guarda en productItem.id.price si es 
         // negativa la cantidad le resto productItem.id.price al total
-        quantity > 0 ? productItem.price = productItem.id.price * productItem.quantity : productItem.price = productItem.price - productItem.id.price
-
+        quantity > 0 ? productItem.price = productItem.id.price * productItem.quantity : productItem.price = productItem.price + (productItem.id.price * quantity)
         cart.products[itemIndex] = productItem;
       }
       else {
         //product does not exists in cart, add new item
         const price = quantity * product.price
         // calulo el subtotal sin descuento
-        cart.subtotal = cart.products.reduce((productAnt, productActual) => {
-          return productAnt + productActual.quantity
-        }, 0)
+
+
         cart.products.push({ id, quantity, price });
       }
 
+      cart.subtotal = cart.products.reduce((productAnt, productActual) => {
+        return productAnt + productActual.price
+      }, 0)
       await cart.save();
       return res.json({ msg: "el producto a sido agregado correctamente" });
     }
@@ -54,7 +55,7 @@ export const generateOrder = async (req, res) => {
       // es el precio unitario por la cantidad
       // calulo el subtotal sin descuento
       const subtotal = cart.products.reduce((productAnt, productActual) => {
-        return productAnt + productActual.quantity
+        return productAnt + productActual.price
       }, 0)
 
       const newCart = Cart.create({
