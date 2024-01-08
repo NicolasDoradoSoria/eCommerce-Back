@@ -17,6 +17,7 @@ export const postProducts = async (req, res) => {
 
     let image = []
     let optionIds = []
+    if (!product.isOffer) product.offerPrice = product.price
 
     // Subir imágenes si existen en la solicitud
     if (req.files?.image) {

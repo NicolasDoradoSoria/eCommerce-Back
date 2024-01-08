@@ -27,6 +27,13 @@ const productSchema = Schema(
                 secure_url: String,
             }
         ],
+        isOffer: {
+            type: Boolean,
+            required: true,
+        },
+        offerPrice: {
+            type: Number,
+        },
         category: {
             type: Schema.Types.ObjectId,
             ref: "Category",
@@ -36,6 +43,7 @@ const productSchema = Schema(
             type: Schema.Types.ObjectId,
             ref: "Options",
         },
+        
         ],
     },
     {
