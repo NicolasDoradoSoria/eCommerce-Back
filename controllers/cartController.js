@@ -6,7 +6,7 @@ import Products from "../models/Products";
 export const generateOrder = async (req, res) => {
   const { id, quantity } = req.body
   try {
-
+    let discount = 0
     // devuelve el usuario logeado
     const userId = req.userId
 
@@ -24,14 +24,18 @@ export const generateOrder = async (req, res) => {
     // si existe un carrito 
     if (cart) {
       let itemIndex = cart.products.findIndex(product => product.id._id == id);
+      let productItem = cart.products[itemIndex]
       //product exists in the cart, update the quantity
       if (itemIndex > -1) {
-        let productItem = cart.products[itemIndex]
 
         productItem.quantity += quantity;
         // si la cantidad es positiva multiplica la cantidad por el precio unitario y lo guarda en productItem.id.price si es 
         // negativa la cantidad le resto productItem.id.price al total
         quantity > 0 ? productItem.price = productItem.id.price * productItem.quantity : productItem.price = productItem.price + (productItem.id.price * quantity)
+
+        // calculo el descuento 
+        discount = productItem.id.offerPrice * productItem.quantity
+
         cart.products[itemIndex] = productItem;
       }
       else {
@@ -46,6 +50,9 @@ export const generateOrder = async (req, res) => {
       cart.subtotal = cart.products.reduce((productAnt, productActual) => {
         return productAnt + productActual.price
       }, 0)
+      cart.discount = -cart.subtotal + discount
+      cart.total = cart.subtotal + cart.discount
+
       await cart.save();
       return res.json({ msg: "el producto a sido agregado correctamente" });
     }
