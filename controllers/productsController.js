@@ -206,7 +206,7 @@ export const searchOption = async (req, res) => {
 
   try {
     const options = await Options.find({})
-
+    console.log(options)
     // Array para almacenar los nombres de las claves
     const keyValues = {};
 
@@ -214,11 +214,14 @@ export const searchOption = async (req, res) => {
     options.forEach(option => {
       if (option.option) {
         const optionKeys = Object.keys(option.option); // Obtener las claves de attributes
-        optionKeys.forEach(key => {
+        optionKeys.forEach(key =>  {
           // Agregar el nombre de la clave al array si no está presente
           if (!keyValues[key]) {
-            keyValues[key] = option.option[key];
+            keyValues[key] = [option.option[key]]
+          } else if (!keyValues[key].includes(option.option[key])) {
+            keyValues[key].push(option.option[key])
           }
+
         });
       }
     });
